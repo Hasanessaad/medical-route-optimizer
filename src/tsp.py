@@ -10,7 +10,10 @@ import numpy as np
 import pygame
 from benchmark_att48 import *
 from data_loader import load_healthcare_locations
-
+from simulation import (
+    split_route_among_vehicles,
+    print_vehicle_summary
+)
 
 # Define constant values
 # pygame
@@ -227,6 +230,13 @@ while running and generation <= N_GENERATIONS:
 end_time = time.time()
 
 execution_time = end_time - start_time
+
+vehicle_routes = split_route_among_vehicles(
+    best_solution,
+    number_of_vehicles=3
+)
+
+print_vehicle_summary(vehicle_routes)
 
 print("\n========== EXPERIMENT RESULTS ==========")
 print(f"Generations: {N_GENERATIONS}")
