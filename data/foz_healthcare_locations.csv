@@ -1,0 +1,91 @@
+﻿id,name,type,latitude,longitude,priority,package_weight,delivery_type,service_time
+1,Farma Util,pharmacy,-25.5426449,-54.5865199,2,1,Blood Sample,20
+2,Hospital Ministro Costa Cavalcante,hospital,-25.497776,-54.5681313,3,12,Medical Equipment,14
+3,Globão,pharmacy,-25.5367753,-54.5870051,1,1,Medicine,8
+4,DASC,pharmacy,-25.4677833,-54.5848139,2,1,Blood Sample,16
+5,Farmácia Cataratas,pharmacy,-25.5233161,-54.5860521,1,5,Vaccine,18
+6,Farmavida,pharmacy,-25.5220236,-54.5859824,2,4,Medical Equipment,16
+7,Farmácia Preço Justo,pharmacy,-25.5149929,-54.5854757,1,3,Medicine,5
+8,Drogafoz,pharmacy,-25.5098528,-54.5956437,2,5,Medical Equipment,15
+9,Bioética,pharmacy,-25.5511312,-54.5719464,2,2,Medical Equipment,18
+10,Farmácias Preço Justo,pharmacy,-25.5518571,-54.5707609,1,2,Medical Equipment,5
+11,Cooperfarma,pharmacy,-25.5514192,-54.5722073,1,2,Vaccine,12
+12,Farmácia Americana,pharmacy,-25.5383543,-54.5869825,1,2,Blood Sample,7
+13,Farmácia Minipreço,pharmacy,-25.5517876,-54.5715361,2,1,Blood Sample,7
+14,Cooperfarma,pharmacy,-25.5405759,-54.5862464,1,5,Medicine,7
+15,Droga Raia,pharmacy,-25.5417585,-54.5863971,2,2,Medicine,15
+16,Cooperfarma,pharmacy,-25.5358941,-54.5872926,2,4,Medical Equipment,6
+17,Vivir más,pharmacy,-25.5826763,-54.5393303,2,5,Blood Sample,10
+18,Farmácia Dal Di,pharmacy,-25.5472982,-54.5786299,1,3,Vaccine,16
+19,Nissei,pharmacy,-25.5393498,-54.5869714,2,1,Medical Equipment,14
+20,Santa Maria,pharmacy,-25.5209721,-54.5637024,1,3,Medical Equipment,18
+21,Fono Foz,clinic,-25.542034,-54.5835611,3,9,Blood Sample,19
+22,Farmacity,pharmacy,-25.5358784,-54.5518075,2,5,Medical Equipment,12
+23,Farmacity,pharmacy,-25.5355864,-54.5571023,1,1,Medical Equipment,6
+24,Clínica Reabilitar,clinic,-25.5508898,-54.5858569,3,6,Medical Equipment,16
+25,Centro de Especialidades - Unimed Foz do Iguaçu,hospital,-25.5314976,-54.5898169,3,9,Medicine,9
+26,Unidade Básica d Saúde d Porto Belo,clinic,-25.4712538,-54.5892542,3,10,Medicine,20
+27,UPA Jardim das Palmeiras,clinic,-25.4942112,-54.5434819,3,10,Vaccine,10
+28,Clínica Iguaçú,clinic,-25.5420899,-54.5835115,3,5,Medicine,20
+29,Droga Raia,pharmacy,-25.5376941,-54.5764291,2,3,Blood Sample,13
+30,Farmácia Preço Justo,pharmacy,-25.5378356,-54.57591,1,5,Medical Equipment,19
+31,Farmácia Via Rápida,pharmacy,-25.5332211,-54.5741925,1,4,Medicine,9
+32,Farmácias Mini Preço,pharmacy,-25.4946558,-54.5645481,1,1,Blood Sample,17
+33,Farmácia Farmautil,pharmacy,-25.4942571,-54.5637405,2,3,Medicine,15
+34,Farma A,pharmacy,-25.4940901,-54.5606092,1,1,Medical Equipment,16
+35,Farmacias Nissei,pharmacy,-25.4943109,-54.5569799,1,2,Medical Equipment,15
+36,Farmácias Nissei,pharmacy,-25.5385994,-54.5861525,2,5,Medicine,7
+37,Farmácia Cooperfarma,pharmacy,-25.5448335,-54.5863268,2,5,Blood Sample,16
+38,Droga Raia,pharmacy,-25.5471021,-54.5868956,2,4,Medical Equipment,14
+39,Farmácia Preço Justo,pharmacy,-25.5480781,-54.5864973,2,4,Medicine,12
+40,Dima's Farma,pharmacy,-25.548042,-54.587438,2,3,Medical Equipment,15
+41,Botica Ouro Preto,pharmacy,-25.5481215,-54.5857279,2,4,Medicine,13
+42,Artesani Manipulação de Fórmulas,pharmacy,-25.5473821,-54.5864396,1,1,Medical Equipment,12
+43,Clinica Immune,clinic,-25.5300793,-54.5720736,3,8,Vaccine,13
+44,UBS Maracanã,clinic,-25.5344545,-54.5677372,3,5,Medicine,14
+45,Droga Raia,pharmacy,-25.5354107,-54.5609298,2,1,Blood Sample,13
+46,UBS Vila Yolanda,clinic,-25.5499459,-54.5660351,3,7,Medical Equipment,17
+47,Crescer Instituto de Pediatria Avançada,clinic,-25.5472537,-54.5779002,3,9,Blood Sample,14
+48,UBS Jd São Paulo,clinic,-25.5448646,-54.5523206,3,8,Medicine,6
+49,Coprtfarma,pharmacy,-25.4689481,-54.5873574,1,4,Medicine,18
+50,Farmácia Preço Justo,pharmacy,-25.5342727,-54.5858215,1,4,Medical Equipment,16
+51,Farmarede,pharmacy,-25.5344875,-54.5858161,1,3,Medicine,11
+52,Coperfarma,pharmacy,-25.5348304,-54.5858478,1,4,Medicine,9
+53,UBS Vila Yolanda,clinic,-25.5499482,-54.5660465,3,10,Vaccine,14
+54,Preço justo,pharmacy,-25.5433785,-54.554941,1,2,Medicine,6
+55,UBS MORUMBI 3,clinic,-25.518273,-54.5352512,3,7,Medical Equipment,17
+56,Cad Farma,pharmacy,-25.5407722,-54.5518343,1,3,Vaccine,9
+57,Genusclin,clinic,-25.5457696,-54.5866517,3,8,Blood Sample,15
+58,Premier Home Care,hospital,-25.5357789,-54.5543337,3,13,Medical Equipment,17
+59,Panvel,pharmacy,-25.5470939,-54.5824273,2,2,Medicine,15
+60,IguaFarma,pharmacy,-25.5488854,-54.5774444,1,2,Medicine,11
+61,Farmácias São João,pharmacy,-25.545123,-54.576454,1,2,Vaccine,15
+62,Bioethos,hospital,-25.55077,-54.5889983,3,14,Blood Sample,9
+63,Farmácia Coperfarma,pharmacy,-25.4771502,-54.5801631,2,5,Medicine,8
+64,Itamax - Instituto de Ressonância Magnética,clinic,-25.5268157,-54.5750807,3,8,Blood Sample,6
+65,Sao Joao,pharmacy,-25.5354778,-54.56165,2,4,Medical Equipment,19
+66,Farmácia São João,pharmacy,-25.5471671,-54.5830975,2,5,Medical Equipment,6
+67,Sao Joao,pharmacy,-25.5120698,-54.5932901,1,5,Vaccine,9
+68,PanVel,pharmacy,-25.5409292,-54.5872218,1,4,Blood Sample,18
+69,Nissei,pharmacy,-25.5372595,-54.5756963,1,1,Medical Equipment,16
+70,Panvel,pharmacy,-25.5388204,-54.5758204,2,3,Medical Equipment,20
+71,Raia,pharmacy,-25.5323062,-54.5731369,2,1,Medicine,5
+72,UBS AKLP,clinic,-25.4898806,-54.5779423,3,9,Vaccine,8
+73,Farmácias Sao Joao,pharmacy,-25.5765533,-54.5824358,2,1,Medicine,10
+74,Beto's Farma,pharmacy,-25.5767892,-54.5648149,2,4,Vaccine,9
+75,hospital municipal extenção,hospital,-25.548674149999997,-54.5865057,3,12,Medical Equipment,15
+76,UPA do Morumbi,clinic,-25.532686192827377,-54.534382724921116,3,8,Vaccine,9
+77,Clínica Santa Luzia,clinic,-25.548851931799753,-54.58554038465304,3,8,Vaccine,18
+78,hospital dos animais,hospital,-25.528144164912277,-54.547834795070486,3,14,Medicine,5
+79,Farmácia Cooperfarma,pharmacy,-25.477143326478163,-54.58015690830835,1,2,Vaccine,20
+80,UBS do Jardim São Paulo II,clinic,-25.54176325,-54.54976315,3,5,Medical Equipment,9
+81,UBS Jardim Curitibano,clinic,-25.49350817552735,-54.55300470852937,3,10,Vaccine,13
+82,Preço Justo,pharmacy,-25.48352018574947,-54.50711467586211,1,3,Medicine,6
+83,Unimed Foz do Iguaçu,hospital,-25.53096104247943,-54.58912700260915,3,9,Vaccine,9
+84,Hospital Municipal Padre Germano Lauck,hospital,-25.519481747066276,-54.57628406325834,3,12,Vaccine,9
+85,Hospital Cataratas,hospital,-25.543656107108433,-54.58024298167684,3,11,Medicine,6
+86,Hospital Costa Cavalcanti,hospital,-25.49908009147838,-54.568565330505436,3,11,Medicine,12
+87,Unidade Básica de Saúde Cidade Nova,clinic,-25.466971035663185,-54.557891411494374,3,10,Blood Sample,6
+88,Itamax - Instituto de Ressonância Magnética,clinic,-25.52682886684318,-54.575062760860234,3,10,Medicine,8
+89,Droga Raia,pharmacy,-25.552078916031785,-54.57038039829402,1,3,Vaccine,11
+90,Farmácia São João,pharmacy,-25.55227947397111,-54.57107065609931,1,5,Medicine,6
