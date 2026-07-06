@@ -1,3 +1,4 @@
+import time
 import pygame
 from pygame.locals import *
 import random
@@ -21,7 +22,7 @@ PLOT_X_OFFSET = 450
 # GA
 N_CITIES = 15
 POPULATION_SIZE = 100
-N_GENERATIONS = None
+N_GENERATIONS = 500
 MUTATION_PROBABILITY = 0.5
 
 # Define colors
@@ -125,16 +126,16 @@ best_solutions = []
 
 
 # Main game loop
+generation = 1
 running = True
-while running:
+start_time = time.time()
+while running and generation <= N_GENERATIONS:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_q:
                 running = False
-
-    generation = next(generation_counter)
 
     screen.fill(WHITE)
 
@@ -183,6 +184,18 @@ while running:
     pygame.display.flip()
     clock.tick(FPS)
 
+    generation += 1
+
+end_time = time.time()
+
+execution_time = end_time - start_time
+
+print("\n========== EXPERIMENT RESULTS ==========")
+print(f"Generations: {N_GENERATIONS}")
+print(f"Population Size: {POPULATION_SIZE}")
+print(f"Mutation Probability: {MUTATION_PROBABILITY}")
+print(f"Best Fitness: {best_fitness:.2f}")
+print(f"Execution Time: {execution_time:.2f} seconds")
 
 # TODO: save the best individual in a file if it is better than the one saved.
 
