@@ -24,16 +24,24 @@ def generate_random_population(cities_location: List[Tuple[float, float]], popul
     """
     return [random.sample(cities_location, len(cities_location)) for _ in range(population_size)]
 
-def calculate_route_distance(path):
+def calculate_route_distance(path, location_lookup):
 
     distance = 0
 
     n = len(path)
 
     for i in range(n):
+
+        current = location_lookup[path[i]]
+
+        nxt = location_lookup[path[(i + 1) % n]]
+
         distance += calculate_distance(
-            path[i],
-            path[(i + 1) % n]
+
+            (current["x"], current["y"]),
+
+            (nxt["x"], nxt["y"])
+
         )
 
     return distance
@@ -88,11 +96,14 @@ def calculate_distance(point1: Tuple[float, float], point2: Tuple[float, float])
     """
     return math.sqrt((point1[0] - point2[0]) ** 2 + (point1[1] - point2[1]) ** 2)
 
-def calculate_distance_penalty(path):
-
+def calculate_distance_penalty(path, location_lookup):
+    
     max_route_distance = 6000
 
-    route_distance = calculate_route_distance(path)
+    route_distance = calculate_route_distance(
+        path,
+        location_lookup
+    )
 
     if route_distance > max_route_distance:
 
@@ -108,7 +119,7 @@ def calculate_fitness(path: List[Tuple[float, float]], location_lookup: dict) ->
     Lower values represent better routes.
     """
 
-    distance = calculate_route_distance(path)
+    distance = calculate_route_distance(path, location_lookup)
 
     priority_penalty = calculate_priority_penalty(
         path,
@@ -120,7 +131,10 @@ def calculate_fitness(path: List[Tuple[float, float]], location_lookup: dict) ->
         location_lookup
     )
 
-    distance_penalty = calculate_distance_penalty(path)
+    distance_penalty = calculate_distance_penalty(
+        path,
+        location_lookup
+    )
 
     return (
         distance
@@ -130,32 +144,30 @@ def calculate_fitness(path: List[Tuple[float, float]], location_lookup: dict) ->
     )
 
 
-def order_crossover(parent1: List[Tuple[float, float]], parent2: List[Tuple[float, float]]) -> List[Tuple[float, float]]:
-    """
-    Perform order crossover (OX) between two parent sequences to create a child sequence.
+def order_crossover(parent1, parent2):
 
-    Parameters:
-    - parent1 (List[Tuple[float, float]]): The first parent sequence.
-    - parent2 (List[Tuple[float, float]]): The second parent sequence.
+    size = len(parent1)
 
-    Returns:
-    List[Tuple[float, float]]: The child sequence resulting from the order crossover.
-    """
-    length = len(parent1)
+    child = [None] * size
 
-    # Choose two random indices for the crossover
-    start_index = random.randint(0, length - 1)
-    end_index = random.randint(start_index + 1, length)
+    start, end = sorted(random.sample(range(size), 2))
 
-    # Initialize the child with a copy of the substring from parent1
-    child = parent1[start_index:end_index]
+    # Copy slice from parent1
+    child[start:end] = parent1[start:end]
 
-    # Fill in the remaining positions with genes from parent2
-    remaining_positions = [i for i in range(length) if i < start_index or i >= end_index]
-    remaining_genes = [gene for gene in parent2 if gene not in child]
+    # Fill remaining positions from parent2
+    p2_index = 0
 
-    for position, gene in zip(remaining_positions, remaining_genes):
-        child.insert(position, gene)
+    for i in range(size):
+
+        if child[i] is None:
+
+            while parent2[p2_index] in child:
+                p2_index += 1
+
+            child[i] = parent2[p2_index]
+
+            p2_index += 1
 
     return child
 

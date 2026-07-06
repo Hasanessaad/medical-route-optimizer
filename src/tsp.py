@@ -118,17 +118,32 @@ for _, row in df.iterrows():
         "y": y
     })
 
-cities_locations = [
-    (location["x"], location["y"])
+city_ids = [
+
+    location["id"]
+
     for location in locations
 ]
+
+city_coordinates = {
+
+    location["id"]:
+
+        (location["x"], location["y"])
+
+    for location in locations
+}
+
+print("Total locations:", len(city_ids))
+print("Unique coordinates:", len(set(city_coordinates.values())))
 
 location_lookup = {}
 
 for location in locations:
-    location_lookup[(location["x"], location["y"])] = location
 
-print(f"Loaded {len(cities_locations)} healthcare locations.")
+    location_lookup[location["id"]] = location
+
+print(f"Loaded {len(city_ids)} healthcare locations.")
 
 # # Using Deault Problems: 10, 12 or 15
 # WIDTH, HEIGHT = 800, 400
@@ -159,7 +174,10 @@ generation_counter = itertools.count(start=1)  # Start the counter at 1
 
 # Create Initial Population
 # TODO:- use some heuristic like Nearest Neighbour our Convex Hull to initialize
-population = generate_random_population(cities_locations, POPULATION_SIZE)
+population = generate_random_population(
+    city_ids,
+    POPULATION_SIZE
+)
 best_fitness_values = []
 best_solutions = []
 
@@ -195,9 +213,35 @@ while running and generation <= N_GENERATIONS:
     draw_plot(screen, list(range(len(best_fitness_values))),
               best_fitness_values, y_label="Fitness - Distance (pxls)")
 
-    draw_cities(screen, cities_locations, RED, NODE_RADIUS)
-    draw_paths(screen, best_solution, BLUE, width=3)
-    draw_paths(screen, population[1], rgb_color=(128, 128, 128), width=1)
+    draw_cities(
+        screen,
+        list(city_coordinates.values()),
+        RED,
+        NODE_RADIUS
+    )
+
+    best_solution_coordinates = [
+
+        city_coordinates[city_id]
+
+        for city_id in best_solution
+    ]
+
+    second_solution_coordinates = [
+
+        city_coordinates[city_id]
+
+        for city_id in population[1]
+
+    ]
+    
+    draw_paths(
+        screen,
+        best_solution_coordinates,
+        BLUE,
+        width=3
+    )
+    draw_paths(screen, second_solution_coordinates, rgb_color=(128, 128, 128), width=1)
 
     print(f"Generation {generation}: Best fitness = {round(best_fitness, 2)}")
 
@@ -230,6 +274,11 @@ while running and generation <= N_GENERATIONS:
 end_time = time.time()
 
 execution_time = end_time - start_time
+
+print("\n========== DEBUG ==========")
+print("Dataset locations:", len(city_ids))
+print("Best solution size:", len(best_solution))
+print("===========================\n")
 
 vehicle_routes = split_route_among_vehicles(
     best_solution,
