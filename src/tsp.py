@@ -3,7 +3,7 @@ import pygame
 from pygame.locals import *
 import random
 import itertools
-from genetic_algorithm import mutate, order_crossover, generate_random_population, calculate_fitness, sort_population, default_problems
+from genetic_algorithm import mutate, order_crossover, generate_random_population, calculate_fitness, sort_population, default_problems, tournament_selection
 from draw_functions import draw_paths, draw_plot, draw_cities
 import sys
 import numpy as np
@@ -253,11 +253,9 @@ while running and generation <= N_GENERATIONS:
         # simple selection based on first 10 best solutions
         # parent1, parent2 = random.choices(population[:10], k=2)
 
-        # solution based on fitness probability
-        probability = 1 / np.array(population_fitness)
-        parent1, parent2 = random.choices(population, weights=probability, k=2)
-
         # child1 = order_crossover(parent1, parent2)
+        parent1 = tournament_selection(population, population_fitness)
+        parent2 = tournament_selection(population, population_fitness)
         child1 = order_crossover(parent1, parent2)
 
         child1 = mutate(child1, MUTATION_PROBABILITY)

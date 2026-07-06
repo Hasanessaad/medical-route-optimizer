@@ -196,7 +196,19 @@ def order_crossover(parent1, parent2):
 # population = [(random.randint(0, 100), random.randint(0, 100))
 #           for _ in range(3)]
 
+def tournament_selection(population, fitness, tournament_size=5):
+    """
+    Select one parent using tournament selection.
+    """
 
+    contestants = random.sample(
+        list(zip(population, fitness)),
+        tournament_size
+    )
+
+    contestants.sort(key=lambda x: x[1])
+
+    return contestants[0][0]
 
 # TODO: implement a mutation_intensity and invert pieces of code instead of just swamping two. 
 def mutate(solution:  List[Tuple[float, float]], mutation_probability: float) ->  List[Tuple[float, float]]:
@@ -219,12 +231,17 @@ def mutate(solution:  List[Tuple[float, float]], mutation_probability: float) ->
         if len(solution) < 2:
             return solution
     
-        # Select a random index (excluding the last index) for swapping
-        index = random.randint(0, len(solution) - 2)
-        
-        # Swap the cities at the selected index and the next index
-        mutated_solution[index], mutated_solution[index + 1] = solution[index + 1], solution[index]   
-        
+    index1 = random.randint(0, len(solution) - 1)
+    index2 = random.randint(0, len(solution) - 1)
+
+    while index1 == index2:
+        index2 = random.randint(0, len(solution) - 1)
+
+    mutated_solution[index1], mutated_solution[index2] = (
+        mutated_solution[index2],
+        mutated_solution[index1]
+    )
+            
     return mutated_solution
 
 ### Demonstration: mutation test code    
