@@ -21,9 +21,26 @@ PLOT_X_OFFSET = 450
 
 # GA
 N_CITIES = 15
-POPULATION_SIZE = 100
+EXPERIMENTS = {
+    "Experiment 1": {
+        "population": 50,
+        "mutation": 0.2
+    },
+    "Experiment 2": {
+        "population": 100,
+        "mutation": 0.5
+    },
+    "Experiment 3": {
+        "population": 200,
+        "mutation": 0.8
+    }
+}
+
+CURRENT_EXPERIMENT = "Experiment 2"
+
+POPULATION_SIZE = EXPERIMENTS[CURRENT_EXPERIMENT]["population"]
+MUTATION_PROBABILITY = EXPERIMENTS[CURRENT_EXPERIMENT]["mutation"]
 N_GENERATIONS = 500
-MUTATION_PROBABILITY = 0.5
 
 # Define colors
 WHITE = (255, 255, 255)
@@ -62,7 +79,7 @@ min_lon = longitudes.min()
 max_lon = longitudes.max()
 
 # Convert GPS coordinates into screen coordinates
-cities_locations = []
+locations = []
 
 for _, row in df.iterrows():
 
@@ -76,7 +93,6 @@ for _, row in df.iterrows():
         / (max_lat - min_lat)
     )
 
-    # Scale to fit the window
     x = int(
         PLOT_X_OFFSET
         + x * (WIDTH - PLOT_X_OFFSET - 20)
@@ -87,7 +103,27 @@ for _, row in df.iterrows():
         + y * (HEIGHT - 40)
     )
 
-    cities_locations.append((x, y))
+    locations.append({
+        "id": row["id"],
+        "name": row["name"],
+        "type": row["type"],
+        "priority": row["priority"],
+        "package_weight": row["package_weight"],
+        "delivery_type": row["delivery_type"],
+        "service_time": row["service_time"],
+        "x": x,
+        "y": y
+    })
+
+cities_locations = [
+    (location["x"], location["y"])
+    for location in locations
+]
+
+location_lookup = {}
+
+for location in locations:
+    location_lookup[(location["x"], location["y"])] = location
 
 print(f"Loaded {len(cities_locations)} healthcare locations.")
 
@@ -139,13 +175,15 @@ while running and generation <= N_GENERATIONS:
 
     screen.fill(WHITE)
 
-    population_fitness = [calculate_fitness(
-        individual) for individual in population]
+    population_fitness = [
+    calculate_fitness(individual, location_lookup)
+    for individual in population
+    ]
 
     population, population_fitness = sort_population(
         population,  population_fitness)
 
-    best_fitness = calculate_fitness(population[0])
+    best_fitness = calculate_fitness(population[0], location_lookup)
     best_solution = population[0]
 
     best_fitness_values.append(best_fitness)
@@ -173,7 +211,7 @@ while running and generation <= N_GENERATIONS:
         parent1, parent2 = random.choices(population, weights=probability, k=2)
 
         # child1 = order_crossover(parent1, parent2)
-        child1 = order_crossover(parent1, parent1)
+        child1 = order_crossover(parent1, parent2)
 
         child1 = mutate(child1, MUTATION_PROBABILITY)
 

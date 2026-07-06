@@ -2,14 +2,6 @@ import random
 import math
 import copy 
 from typing import List, Tuple
-from data_loader import load_healthcare_locations
-
-healthcare_df = load_healthcare_locations()
-
-location_lookup = {}
-
-for _, row in healthcare_df.iterrows():
-    location_lookup[(row["longitude"], row["latitude"])] = row
 
 default_problems = {
 5: [(733, 251), (706, 87), (546, 97), (562, 49), (576, 253)],
@@ -47,23 +39,71 @@ def calculate_distance(point1: Tuple[float, float], point2: Tuple[float, float])
     return math.sqrt((point1[0] - point2[0]) ** 2 + (point1[1] - point2[1]) ** 2)
 
 
-def calculate_fitness(path: List[Tuple[float, float]]) -> float:
+def calculate_fitness(path: List[Tuple[float, float]], location_lookup: dict) -> float:
     """
     Calculate the fitness of a given path based on the total Euclidean distance.
 
     Parameters:
     - path (List[Tuple[float, float]]): A list of tuples representing the path,
       where each tuple contains the coordinates of a point.
+    - location_lookup (dict): A dictionary mapping city coordinates to their information.
 
     Returns:
     float: The total Euclidean distance of the path.
     """
     distance = 0
     n = len(path)
-    for i in range(n):
-        distance += calculate_distance(path[i], path[(i + 1) % n])
 
-    return distance
+    # Calculate total route distance
+    for i in range(n):
+        distance += calculate_distance(
+            path[i],
+            path[(i + 1) % n]
+        )
+
+    # -------------------------
+    # Priority Penalty
+    # -------------------------
+
+    priority_penalty = 0
+
+    for position, point in enumerate(path):
+
+        location = location_lookup[point]
+
+        if location["priority"] == 3:
+            priority_penalty += position * 5
+
+        elif location["priority"] == 2:
+            priority_penalty += position * 3
+
+        else:
+            priority_penalty += position
+
+    vehicle_capacity = 20
+
+    total_weight = 0
+
+    for point in path:
+
+        location = location_lookup[point]
+
+        total_weight += location["package_weight"]
+
+    capacity_penalty = 0
+
+    if total_weight > vehicle_capacity:
+
+        excess = total_weight - vehicle_capacity
+
+        capacity_penalty = excess * 50
+
+    # Total fitness
+    return (
+        distance
+        + priority_penalty
+        + capacity_penalty
+    )
 
 
 def order_crossover(parent1: List[Tuple[float, float]], parent2: List[Tuple[float, float]]) -> List[Tuple[float, float]]:
