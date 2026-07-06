@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # TSP Solver using Genetic Algorithm
 
 This repository contains a Python implementation of a Traveling Salesman Problem (TSP) solver using a Genetic Algorithm (GA). The TSP is a classic problem in the field of combinatorial optimization, where the goal is to find the shortest possible route that visits a set of given cities exactly once and returns to the original city.
@@ -44,3 +45,6 @@ This project is licensed under the [MIT License](LICENSE).
 ---
 
 Feel free to contribute to this repository by providing enhancements, bug fixes, or additional features. If you encounter any issues or have suggestions for improvements, please open an issue on the repository. Happy solving!
+=======
+# medical-route-optimizer
+>>>>>>> 36868fd6474fdc462e92fad06c657f60055999f7
