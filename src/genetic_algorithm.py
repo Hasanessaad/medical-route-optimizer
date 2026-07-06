@@ -24,6 +24,56 @@ def generate_random_population(cities_location: List[Tuple[float, float]], popul
     """
     return [random.sample(cities_location, len(cities_location)) for _ in range(population_size)]
 
+def calculate_route_distance(path):
+
+    distance = 0
+
+    n = len(path)
+
+    for i in range(n):
+        distance += calculate_distance(
+            path[i],
+            path[(i + 1) % n]
+        )
+
+    return distance
+
+def calculate_priority_penalty(path, location_lookup):
+
+    penalty = 0
+
+    for position, point in enumerate(path):
+
+        location = location_lookup[point]
+
+        if location["priority"] == 3:
+            penalty += position * 5
+
+        elif location["priority"] == 2:
+            penalty += position * 3
+
+        else:
+            penalty += position
+
+    return penalty
+
+def calculate_capacity_penalty(path, location_lookup):
+
+    vehicle_capacity = 20
+
+    total_weight = 0
+
+    for point in path:
+
+        location = location_lookup[point]
+
+        total_weight += location["package_weight"]
+
+    if total_weight > vehicle_capacity:
+
+        return (total_weight - vehicle_capacity) * 50
+
+    return 0
 
 def calculate_distance(point1: Tuple[float, float], point2: Tuple[float, float]) -> float:
     """
@@ -38,71 +88,45 @@ def calculate_distance(point1: Tuple[float, float], point2: Tuple[float, float])
     """
     return math.sqrt((point1[0] - point2[0]) ** 2 + (point1[1] - point2[1]) ** 2)
 
+def calculate_distance_penalty(path):
+
+    max_route_distance = 6000
+
+    route_distance = calculate_route_distance(path)
+
+    if route_distance > max_route_distance:
+
+        excess = route_distance - max_route_distance
+
+        return excess * 2
+
+    return 0
 
 def calculate_fitness(path: List[Tuple[float, float]], location_lookup: dict) -> float:
     """
-    Calculate the fitness of a given path based on the total Euclidean distance.
-
-    Parameters:
-    - path (List[Tuple[float, float]]): A list of tuples representing the path,
-      where each tuple contains the coordinates of a point.
-    - location_lookup (dict): A dictionary mapping city coordinates to their information.
-
-    Returns:
-    float: The total Euclidean distance of the path.
+    Calculate the total fitness of a route.
+    Lower values represent better routes.
     """
-    distance = 0
-    n = len(path)
 
-    # Calculate total route distance
-    for i in range(n):
-        distance += calculate_distance(
-            path[i],
-            path[(i + 1) % n]
-        )
+    distance = calculate_route_distance(path)
 
-    # -------------------------
-    # Priority Penalty
-    # -------------------------
+    priority_penalty = calculate_priority_penalty(
+        path,
+        location_lookup
+    )
 
-    priority_penalty = 0
+    capacity_penalty = calculate_capacity_penalty(
+        path,
+        location_lookup
+    )
 
-    for position, point in enumerate(path):
+    distance_penalty = calculate_distance_penalty(path)
 
-        location = location_lookup[point]
-
-        if location["priority"] == 3:
-            priority_penalty += position * 5
-
-        elif location["priority"] == 2:
-            priority_penalty += position * 3
-
-        else:
-            priority_penalty += position
-
-    vehicle_capacity = 20
-
-    total_weight = 0
-
-    for point in path:
-
-        location = location_lookup[point]
-
-        total_weight += location["package_weight"]
-
-    capacity_penalty = 0
-
-    if total_weight > vehicle_capacity:
-
-        excess = total_weight - vehicle_capacity
-
-        capacity_penalty = excess * 50
-
-    # Total fitness
     return (
         distance
         + priority_penalty
         + capacity_penalty
+        + distance_penalty
     )
 
 
