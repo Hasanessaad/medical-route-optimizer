@@ -10,7 +10,51 @@ default_problems = {
 15:[(512, 317), (741, 72), (552, 50), (772, 346), (637, 12), (589, 131), (732, 165), (605, 15), (730, 38), (576, 216), (589, 381), (711, 387), (563, 228), (494, 22), (787, 288)]
 }
 
-def generate_random_population(cities_location: List[Tuple[float, float]], population_size: int) -> List[List[Tuple[float, float]]]:
+def euclidean_distance(location1, location2):
+
+    return math.sqrt(
+        (location1["x"] - location2["x"]) ** 2 +
+        (location1["y"] - location2["y"]) ** 2
+    )
+
+def nearest_neighbor_route(city_ids, location_lookup):
+
+    remaining = city_ids.copy()
+
+    current = random.choice(remaining)
+
+    route = [current]
+
+    remaining.remove(current)
+
+    while remaining:
+
+        nearest = min(
+
+            remaining,
+
+            key=lambda city:
+
+                euclidean_distance(
+
+                    location_lookup[current],
+
+                    location_lookup[city]
+
+                )
+
+        )
+
+        route.append(nearest)
+
+        remaining.remove(nearest)
+
+        current = nearest
+
+    return route
+
+def generate_random_population(city_ids, population_size, location_lookup):
+
     """
     Generate a random population of routes for a given set of cities.
 
@@ -22,7 +66,35 @@ def generate_random_population(cities_location: List[Tuple[float, float]], popul
     Returns:
     List[List[Tuple[float, float]]]: A list of routes, where each route is represented as a list of city locations.
     """
-    return [random.sample(cities_location, len(cities_location)) for _ in range(population_size)]
+    population = []
+
+    random_individuals = int(population_size * 0.7)
+
+    greedy_individuals = population_size - random_individuals
+
+    for _ in range(random_individuals):
+
+        population.append(
+
+            random.sample(city_ids, len(city_ids))
+
+        )
+
+    for _ in range(greedy_individuals):
+
+        population.append(
+
+            nearest_neighbor_route(
+
+                city_ids,
+
+                location_lookup
+
+            )
+    )
+        
+    return population
+
 
 def calculate_route_distance(path, location_lookup):
 

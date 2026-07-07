@@ -14,6 +14,14 @@ from simulation import (
     split_route_among_vehicles,
     print_vehicle_summary
 )
+from llm import (
+    explain_vehicle_route,
+    generate_daily_report,
+    ask_question,
+    generate_driver_instructions
+)
+# from pathlib import Path
+# from datetime import datetime
 
 # Define constant values
 # pygame
@@ -176,8 +184,10 @@ generation_counter = itertools.count(start=1)  # Start the counter at 1
 # TODO:- use some heuristic like Nearest Neighbour our Convex Hull to initialize
 population = generate_random_population(
     city_ids,
-    POPULATION_SIZE
+    POPULATION_SIZE,
+    location_lookup
 )
+
 best_fitness_values = []
 best_solutions = []
 
@@ -273,6 +283,23 @@ end_time = time.time()
 
 execution_time = end_time - start_time
 
+# timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+
+# report_folder = Path("reports") / timestamp
+
+# report_folder.mkdir(
+#     parents=True,
+#     exist_ok=True
+# )
+
+# vehicle1_folder = report_folder / "vehicle_1"
+# vehicle2_folder = report_folder / "vehicle_2"
+# vehicle3_folder = report_folder / "vehicle_3"
+
+# vehicle1_folder.mkdir()
+# vehicle2_folder.mkdir()
+# vehicle3_folder.mkdir()
+
 print("\n========== DEBUG ==========")
 print("Dataset locations:", len(city_ids))
 print("Best solution size:", len(best_solution))
@@ -280,10 +307,64 @@ print("===========================\n")
 
 vehicle_routes = split_route_among_vehicles(
     best_solution,
-    number_of_vehicles=3
+    number_of_vehicles=3,
+    location_lookup=location_lookup
 )
 
-print_vehicle_summary(vehicle_routes)
+print_vehicle_summary(vehicle_routes, location_lookup)
+
+for i, route in enumerate(vehicle_routes):
+
+    print(f"\n===== DRIVER INSTRUCTIONS - VEHICLE {i+1} =====\n")
+
+    instructions = generate_driver_instructions(
+        route,
+        location_lookup
+    )
+
+    print(instructions)
+    # with open(
+    #     vehicle1_folder / "instructions.md",
+    #     "w",
+    #     encoding="utf-8"
+    # ) as f:
+
+    #     f.write(instructions)
+
+    # with open(
+    #     vehicle2_folder / "instructions.md",
+    #     "w",
+    #     encoding="utf-8"
+    # ) as f:
+
+    #     f.write(instructions)
+
+    # with open(
+    #     vehicle3_folder / "instructions.md",
+    #     "w",
+    #     encoding="utf-8"
+    # ) as f:
+
+    #     f.write(instructions)
+
+    # with open(
+    #     report_folder / "daily_report.md",
+    #     "w",
+    #     encoding="utf-8"
+    # ) as f:
+
+    #     f.write(report) 
+
+for i, route in enumerate(vehicle_routes):
+
+    print(f"\n===== Vehicle {i+1} Analysis =====")
+
+    print(
+        explain_vehicle_route(
+            route,
+            location_lookup
+        )
+    )
 
 print("\n========== EXPERIMENT RESULTS ==========")
 print(f"Generations: {N_GENERATIONS}")
@@ -291,6 +372,24 @@ print(f"Population Size: {POPULATION_SIZE}")
 print(f"Mutation Probability: {MUTATION_PROBABILITY}")
 print(f"Best Fitness: {best_fitness:.2f}")
 print(f"Execution Time: {execution_time:.2f} seconds")
+
+report = generate_daily_report(
+    best_fitness,
+    vehicle_routes,
+    location_lookup
+)
+
+print(report)
+
+print("\n========== QUESTION ==========\n")
+
+answer = ask_question(
+    "Which vehicle has the most high priority deliveries?",
+    vehicle_routes,
+    location_lookup
+)
+
+print(answer)
 
 # TODO: save the best individual in a file if it is better than the one saved.
 
