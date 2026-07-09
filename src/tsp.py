@@ -388,8 +388,9 @@ answer = ask_question(
     vehicle_routes,
     location_lookup
 )
-
-print(answer)
+print("Which vehicle has the most high priority deliveries?")
+print("--------------------------------")
+print(f"Answer: {answer}")
 
 # TODO: save the best individual in a file if it is better than the one saved.
 
