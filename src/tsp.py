@@ -3,14 +3,25 @@ import pygame
 from pygame.locals import *
 import random
 import itertools
-from genetic_algorithm import mutate, order_crossover, generate_random_population, calculate_fitness, sort_population, default_problems
+from genetic_algorithm import mutate, order_crossover, generate_random_population, calculate_fitness, sort_population, default_problems, tournament_selection
 from draw_functions import draw_paths, draw_plot, draw_cities
 import sys
 import numpy as np
 import pygame
 from benchmark_att48 import *
 from data_loader import load_healthcare_locations
-
+from simulation import (
+    split_route_among_vehicles,
+    print_vehicle_summary
+)
+from llm import (
+    explain_vehicle_route,
+    generate_daily_report,
+    ask_question,
+    generate_driver_instructions
+)
+# from pathlib import Path
+# from datetime import datetime
 
 # Define constant values
 # pygame
@@ -21,9 +32,26 @@ PLOT_X_OFFSET = 450
 
 # GA
 N_CITIES = 15
-POPULATION_SIZE = 100
+EXPERIMENTS = {
+    "Experiment 1": {
+        "population": 50,
+        "mutation": 0.2
+    },
+    "Experiment 2": {
+        "population": 100,
+        "mutation": 0.5
+    },
+    "Experiment 3": {
+        "population": 200,
+        "mutation": 0.8
+    }
+}
+
+CURRENT_EXPERIMENT = "Experiment 2"
+
+POPULATION_SIZE = EXPERIMENTS[CURRENT_EXPERIMENT]["population"]
+MUTATION_PROBABILITY = EXPERIMENTS[CURRENT_EXPERIMENT]["mutation"]
 N_GENERATIONS = 500
-MUTATION_PROBABILITY = 0.5
 
 # Define colors
 WHITE = (255, 255, 255)
@@ -62,7 +90,7 @@ min_lon = longitudes.min()
 max_lon = longitudes.max()
 
 # Convert GPS coordinates into screen coordinates
-cities_locations = []
+locations = []
 
 for _, row in df.iterrows():
 
@@ -76,7 +104,6 @@ for _, row in df.iterrows():
         / (max_lat - min_lat)
     )
 
-    # Scale to fit the window
     x = int(
         PLOT_X_OFFSET
         + x * (WIDTH - PLOT_X_OFFSET - 20)
@@ -87,9 +114,44 @@ for _, row in df.iterrows():
         + y * (HEIGHT - 40)
     )
 
-    cities_locations.append((x, y))
+    locations.append({
+        "id": row["id"],
+        "name": row["name"],
+        "type": row["type"],
+        "priority": row["priority"],
+        "package_weight": row["package_weight"],
+        "delivery_type": row["delivery_type"],
+        "service_time": row["service_time"],
+        "x": x,
+        "y": y
+    })
 
-print(f"Loaded {len(cities_locations)} healthcare locations.")
+city_ids = [
+
+    location["id"]
+
+    for location in locations
+]
+
+city_coordinates = {
+
+    location["id"]:
+
+        (location["x"], location["y"])
+
+    for location in locations
+}
+
+print("Total locations:", len(city_ids))
+print("Unique coordinates:", len(set(city_coordinates.values())))
+
+location_lookup = {}
+
+for location in locations:
+
+    location_lookup[location["id"]] = location
+
+print(f"Loaded {len(city_ids)} healthcare locations.")
 
 # # Using Deault Problems: 10, 12 or 15
 # WIDTH, HEIGHT = 800, 400
@@ -120,7 +182,12 @@ generation_counter = itertools.count(start=1)  # Start the counter at 1
 
 # Create Initial Population
 # TODO:- use some heuristic like Nearest Neighbour our Convex Hull to initialize
-population = generate_random_population(cities_locations, POPULATION_SIZE)
+population = generate_random_population(
+    city_ids,
+    POPULATION_SIZE,
+    location_lookup
+)
+
 best_fitness_values = []
 best_solutions = []
 
@@ -139,13 +206,15 @@ while running and generation <= N_GENERATIONS:
 
     screen.fill(WHITE)
 
-    population_fitness = [calculate_fitness(
-        individual) for individual in population]
+    population_fitness = [
+    calculate_fitness(individual, location_lookup)
+    for individual in population
+    ]
 
     population, population_fitness = sort_population(
         population,  population_fitness)
 
-    best_fitness = calculate_fitness(population[0])
+    best_fitness = calculate_fitness(population[0], location_lookup)
     best_solution = population[0]
 
     best_fitness_values.append(best_fitness)
@@ -154,9 +223,35 @@ while running and generation <= N_GENERATIONS:
     draw_plot(screen, list(range(len(best_fitness_values))),
               best_fitness_values, y_label="Fitness - Distance (pxls)")
 
-    draw_cities(screen, cities_locations, RED, NODE_RADIUS)
-    draw_paths(screen, best_solution, BLUE, width=3)
-    draw_paths(screen, population[1], rgb_color=(128, 128, 128), width=1)
+    draw_cities(
+        screen,
+        list(city_coordinates.values()),
+        RED,
+        NODE_RADIUS
+    )
+
+    best_solution_coordinates = [
+
+        city_coordinates[city_id]
+
+        for city_id in best_solution
+    ]
+
+    second_solution_coordinates = [
+
+        city_coordinates[city_id]
+
+        for city_id in population[1]
+
+    ]
+    
+    draw_paths(
+        screen,
+        best_solution_coordinates,
+        BLUE,
+        width=3
+    )
+    draw_paths(screen, second_solution_coordinates, rgb_color=(128, 128, 128), width=1)
 
     print(f"Generation {generation}: Best fitness = {round(best_fitness, 2)}")
 
@@ -168,12 +263,10 @@ while running and generation <= N_GENERATIONS:
         # simple selection based on first 10 best solutions
         # parent1, parent2 = random.choices(population[:10], k=2)
 
-        # solution based on fitness probability
-        probability = 1 / np.array(population_fitness)
-        parent1, parent2 = random.choices(population, weights=probability, k=2)
-
         # child1 = order_crossover(parent1, parent2)
-        child1 = order_crossover(parent1, parent1)
+        parent1 = tournament_selection(population, population_fitness)
+        parent2 = tournament_selection(population, population_fitness)
+        child1 = order_crossover(parent1, parent2)
 
         child1 = mutate(child1, MUTATION_PROBABILITY)
 
@@ -190,12 +283,114 @@ end_time = time.time()
 
 execution_time = end_time - start_time
 
+# timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+
+# report_folder = Path("reports") / timestamp
+
+# report_folder.mkdir(
+#     parents=True,
+#     exist_ok=True
+# )
+
+# vehicle1_folder = report_folder / "vehicle_1"
+# vehicle2_folder = report_folder / "vehicle_2"
+# vehicle3_folder = report_folder / "vehicle_3"
+
+# vehicle1_folder.mkdir()
+# vehicle2_folder.mkdir()
+# vehicle3_folder.mkdir()
+
+print("\n========== DEBUG ==========")
+print("Dataset locations:", len(city_ids))
+print("Best solution size:", len(best_solution))
+print("===========================\n")
+
+vehicle_routes = split_route_among_vehicles(
+    best_solution,
+    number_of_vehicles=3,
+    location_lookup=location_lookup
+)
+
+print_vehicle_summary(vehicle_routes, location_lookup)
+
+for i, route in enumerate(vehicle_routes):
+
+    print(f"\n===== DRIVER INSTRUCTIONS - VEHICLE {i+1} =====\n")
+
+    instructions = generate_driver_instructions(
+        route,
+        location_lookup
+    )
+
+    print(instructions)
+    # with open(
+    #     vehicle1_folder / "instructions.md",
+    #     "w",
+    #     encoding="utf-8"
+    # ) as f:
+
+    #     f.write(instructions)
+
+    # with open(
+    #     vehicle2_folder / "instructions.md",
+    #     "w",
+    #     encoding="utf-8"
+    # ) as f:
+
+    #     f.write(instructions)
+
+    # with open(
+    #     vehicle3_folder / "instructions.md",
+    #     "w",
+    #     encoding="utf-8"
+    # ) as f:
+
+    #     f.write(instructions)
+
+    # with open(
+    #     report_folder / "daily_report.md",
+    #     "w",
+    #     encoding="utf-8"
+    # ) as f:
+
+    #     f.write(report) 
+
+for i, route in enumerate(vehicle_routes):
+
+    print(f"\n===== Vehicle {i+1} Analysis =====")
+
+    print(
+        explain_vehicle_route(
+            route,
+            location_lookup
+        )
+    )
+
 print("\n========== EXPERIMENT RESULTS ==========")
 print(f"Generations: {N_GENERATIONS}")
 print(f"Population Size: {POPULATION_SIZE}")
 print(f"Mutation Probability: {MUTATION_PROBABILITY}")
 print(f"Best Fitness: {best_fitness:.2f}")
 print(f"Execution Time: {execution_time:.2f} seconds")
+
+report = generate_daily_report(
+    best_fitness,
+    vehicle_routes,
+    location_lookup
+)
+
+print(report)
+
+print("\n========== QUESTION ==========\n")
+
+answer = ask_question(
+    "Which vehicle has the most high priority deliveries?",
+    vehicle_routes,
+    location_lookup
+)
+print("Which vehicle has the most high priority deliveries?")
+print("--------------------------------")
+print(f"Answer: {answer}")
 
 # TODO: save the best individual in a file if it is better than the one saved.
 

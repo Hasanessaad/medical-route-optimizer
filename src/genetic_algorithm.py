@@ -2,14 +2,6 @@ import random
 import math
 import copy 
 from typing import List, Tuple
-from data_loader import load_healthcare_locations
-
-healthcare_df = load_healthcare_locations()
-
-location_lookup = {}
-
-for _, row in healthcare_df.iterrows():
-    location_lookup[(row["longitude"], row["latitude"])] = row
 
 default_problems = {
 5: [(733, 251), (706, 87), (546, 97), (562, 49), (576, 253)],
@@ -18,7 +10,51 @@ default_problems = {
 15:[(512, 317), (741, 72), (552, 50), (772, 346), (637, 12), (589, 131), (732, 165), (605, 15), (730, 38), (576, 216), (589, 381), (711, 387), (563, 228), (494, 22), (787, 288)]
 }
 
-def generate_random_population(cities_location: List[Tuple[float, float]], population_size: int) -> List[List[Tuple[float, float]]]:
+def euclidean_distance(location1, location2):
+
+    return math.sqrt(
+        (location1["x"] - location2["x"]) ** 2 +
+        (location1["y"] - location2["y"]) ** 2
+    )
+
+def nearest_neighbor_route(city_ids, location_lookup):
+
+    remaining = city_ids.copy()
+
+    current = random.choice(remaining)
+
+    route = [current]
+
+    remaining.remove(current)
+
+    while remaining:
+
+        nearest = min(
+
+            remaining,
+
+            key=lambda city:
+
+                euclidean_distance(
+
+                    location_lookup[current],
+
+                    location_lookup[city]
+
+                )
+
+        )
+
+        route.append(nearest)
+
+        remaining.remove(nearest)
+
+        current = nearest
+
+    return route
+
+def generate_random_population(city_ids, population_size, location_lookup):
+
     """
     Generate a random population of routes for a given set of cities.
 
@@ -30,8 +66,94 @@ def generate_random_population(cities_location: List[Tuple[float, float]], popul
     Returns:
     List[List[Tuple[float, float]]]: A list of routes, where each route is represented as a list of city locations.
     """
-    return [random.sample(cities_location, len(cities_location)) for _ in range(population_size)]
+    population = []
 
+    random_individuals = int(population_size * 0.7)
+
+    greedy_individuals = population_size - random_individuals
+
+    for _ in range(random_individuals):
+
+        population.append(
+
+            random.sample(city_ids, len(city_ids))
+
+        )
+
+    for _ in range(greedy_individuals):
+
+        population.append(
+
+            nearest_neighbor_route(
+
+                city_ids,
+
+                location_lookup
+
+            )
+    )
+        
+    return population
+
+
+def calculate_route_distance(path, location_lookup):
+
+    distance = 0
+
+    n = len(path)
+
+    for i in range(n):
+
+        current = location_lookup[path[i]]
+
+        nxt = location_lookup[path[(i + 1) % n]]
+
+        distance += calculate_distance(
+
+            (current["x"], current["y"]),
+
+            (nxt["x"], nxt["y"])
+
+        )
+
+    return distance
+
+def calculate_priority_penalty(path, location_lookup):
+
+    penalty = 0
+
+    for position, point in enumerate(path):
+
+        location = location_lookup[point]
+
+        if location["priority"] == 3:
+            penalty += position * 5
+
+        elif location["priority"] == 2:
+            penalty += position * 3
+
+        else:
+            penalty += position
+
+    return penalty
+
+def calculate_capacity_penalty(path, location_lookup):
+
+    vehicle_capacity = 20
+
+    total_weight = 0
+
+    for point in path:
+
+        location = location_lookup[point]
+
+        total_weight += location["package_weight"]
+
+    if total_weight > vehicle_capacity:
+
+        return (total_weight - vehicle_capacity) * 50
+
+    return 0
 
 def calculate_distance(point1: Tuple[float, float], point2: Tuple[float, float]) -> float:
     """
@@ -46,52 +168,78 @@ def calculate_distance(point1: Tuple[float, float], point2: Tuple[float, float])
     """
     return math.sqrt((point1[0] - point2[0]) ** 2 + (point1[1] - point2[1]) ** 2)
 
+def calculate_distance_penalty(path, location_lookup):
+    
+    max_route_distance = 6000
 
-def calculate_fitness(path: List[Tuple[float, float]]) -> float:
+    route_distance = calculate_route_distance(
+        path,
+        location_lookup
+    )
+
+    if route_distance > max_route_distance:
+
+        excess = route_distance - max_route_distance
+
+        return excess * 2
+
+    return 0
+
+def calculate_fitness(path: List[Tuple[float, float]], location_lookup: dict) -> float:
     """
-    Calculate the fitness of a given path based on the total Euclidean distance.
-
-    Parameters:
-    - path (List[Tuple[float, float]]): A list of tuples representing the path,
-      where each tuple contains the coordinates of a point.
-
-    Returns:
-    float: The total Euclidean distance of the path.
+    Calculate the total fitness of a route.
+    Lower values represent better routes.
     """
-    distance = 0
-    n = len(path)
-    for i in range(n):
-        distance += calculate_distance(path[i], path[(i + 1) % n])
 
-    return distance
+    distance = calculate_route_distance(path, location_lookup)
+
+    priority_penalty = calculate_priority_penalty(
+        path,
+        location_lookup
+    )
+
+    capacity_penalty = calculate_capacity_penalty(
+        path,
+        location_lookup
+    )
+
+    distance_penalty = calculate_distance_penalty(
+        path,
+        location_lookup
+    )
+
+    return (
+        distance
+        + priority_penalty
+        + capacity_penalty
+        + distance_penalty
+    )
 
 
-def order_crossover(parent1: List[Tuple[float, float]], parent2: List[Tuple[float, float]]) -> List[Tuple[float, float]]:
-    """
-    Perform order crossover (OX) between two parent sequences to create a child sequence.
+def order_crossover(parent1, parent2):
 
-    Parameters:
-    - parent1 (List[Tuple[float, float]]): The first parent sequence.
-    - parent2 (List[Tuple[float, float]]): The second parent sequence.
+    size = len(parent1)
 
-    Returns:
-    List[Tuple[float, float]]: The child sequence resulting from the order crossover.
-    """
-    length = len(parent1)
+    child = [None] * size
 
-    # Choose two random indices for the crossover
-    start_index = random.randint(0, length - 1)
-    end_index = random.randint(start_index + 1, length)
+    start, end = sorted(random.sample(range(size), 2))
 
-    # Initialize the child with a copy of the substring from parent1
-    child = parent1[start_index:end_index]
+    # Copy slice from parent1
+    child[start:end] = parent1[start:end]
 
-    # Fill in the remaining positions with genes from parent2
-    remaining_positions = [i for i in range(length) if i < start_index or i >= end_index]
-    remaining_genes = [gene for gene in parent2 if gene not in child]
+    # Fill remaining positions from parent2
+    p2_index = 0
 
-    for position, gene in zip(remaining_positions, remaining_genes):
-        child.insert(position, gene)
+    for i in range(size):
+
+        if child[i] is None:
+
+            while parent2[p2_index] in child:
+                p2_index += 1
+
+            child[i] = parent2[p2_index]
+
+            p2_index += 1
 
     return child
 
@@ -120,7 +268,19 @@ def order_crossover(parent1: List[Tuple[float, float]], parent2: List[Tuple[floa
 # population = [(random.randint(0, 100), random.randint(0, 100))
 #           for _ in range(3)]
 
+def tournament_selection(population, fitness, tournament_size=5):
+    """
+    Select one parent using tournament selection.
+    """
 
+    contestants = random.sample(
+        list(zip(population, fitness)),
+        tournament_size
+    )
+
+    contestants.sort(key=lambda x: x[1])
+
+    return contestants[0][0]
 
 # TODO: implement a mutation_intensity and invert pieces of code instead of just swamping two. 
 def mutate(solution:  List[Tuple[float, float]], mutation_probability: float) ->  List[Tuple[float, float]]:
@@ -143,12 +303,17 @@ def mutate(solution:  List[Tuple[float, float]], mutation_probability: float) ->
         if len(solution) < 2:
             return solution
     
-        # Select a random index (excluding the last index) for swapping
-        index = random.randint(0, len(solution) - 2)
-        
-        # Swap the cities at the selected index and the next index
-        mutated_solution[index], mutated_solution[index + 1] = solution[index + 1], solution[index]   
-        
+    index1 = random.randint(0, len(solution) - 1)
+    index2 = random.randint(0, len(solution) - 1)
+
+    while index1 == index2:
+        index2 = random.randint(0, len(solution) - 1)
+
+    mutated_solution[index1], mutated_solution[index2] = (
+        mutated_solution[index2],
+        mutated_solution[index1]
+    )
+            
     return mutated_solution
 
 ### Demonstration: mutation test code    
