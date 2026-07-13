@@ -381,16 +381,28 @@ report = generate_daily_report(
 
 print(report)
 
-print("\n========== QUESTION ==========\n")
+print("\n===================================")
+print(" Medical Route Assistant")
+print("===================================")
 
-answer = ask_question(
-    "Which vehicle has the most high priority deliveries?",
-    vehicle_routes,
-    location_lookup
-)
-print("Which vehicle has the most high priority deliveries?")
-print("--------------------------------")
-print(f"Answer: {answer}")
+print("Type 'exit' to finish.\n")
+
+while True:
+
+    question = input("Ask a question: ")
+
+    if question.lower() == "exit":
+        break
+
+    answer = ask_question(
+        question,
+        vehicle_routes,
+        location_lookup
+    )
+
+    print("\nAnswer:\n")
+    print(answer)
+    print("\n----------------------------------\n")
 
 # TODO: save the best individual in a file if it is better than the one saved.
 

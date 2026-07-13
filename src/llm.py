@@ -237,19 +237,24 @@ Package weight: {weight} kg
         )
 
     prompt = f"""
-You are a medical logistics assistant.
+ou are an AI medical logistics assistant.
 
-Answer ONLY using the information below.
+You are helping a hospital logistics manager understand today's optimized delivery routes.
+
+Answer the user's question ONLY using the provided route statistics.
+
+If the answer cannot be determined from the available information, clearly say that.
+
+Be concise, professional and factual.
 
 Vehicle statistics:
 
 {''.join(summary)}
 
-Question:
+User question:
 
 {question}
 
-If the answer cannot be determined from the statistics, say so.
 """
 
     for attempt in range(3):
