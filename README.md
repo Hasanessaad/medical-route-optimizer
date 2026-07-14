@@ -2,7 +2,7 @@
 
 ## Overview
 
-This project was developed as part of the FIAP Tech Challenge for the Medical AI module.
+This project was developed as part of the **FIAP Tech Challenge** for the Medical AI module.
 
 The objective is to optimize the distribution of medications and medical supplies between healthcare facilities using a **Genetic Algorithm (GA)** while integrating a **Large Language Model (LLM)** to automatically generate driver instructions, operational reports, and answer logistics-related questions.
 
@@ -13,7 +13,7 @@ The project extends a basic Travelling Salesman Problem (TSP) implementation by 
 # Features
 
 - Genetic Algorithm for route optimization
-- Real healthcare dataset (90 locations)
+- Real healthcare dataset (90 healthcare locations)
 - Delivery priority optimization
 - Vehicle capacity constraints
 - Vehicle autonomy (maximum route distance)
@@ -25,7 +25,8 @@ The project extends a basic Travelling Salesman Problem (TSP) implementation by 
 - Elitism
 - AI-generated driver instructions
 - AI-generated logistics reports
-- Natural language route analysis using Gemini
+- Vehicle route summaries
+- Natural language route analysis using Google Gemini
 
 ---
 
@@ -37,44 +38,80 @@ The project extends a basic Travelling Salesman Problem (TSP) implementation by 
 - Pandas
 - Google Gemini API
 - Python Dotenv
-- Git & GitHub
+- Git
+- GitHub
 
 ---
 
 # Project Structure
 
-```
+```text
 medical-route-optimizer/
 
 │
 ├── data/
 │   └── foz_healthcare_locations.csv
 │
+├── outputs/
+│   ├── driver_instructions/
+│   └── reports/
+│
 ├── src/
 │   ├── tsp.py
 │   ├── genetic_algorithm.py
-│   ├── data_loader.py
-│   ├── draw_functions.py
 │   ├── simulation.py
 │   ├── llm.py
+│   ├── data_loader.py
+│   ├── draw_functions.py
 │   ├── benchmark_att48.py
 │   └── test_llm.py
 │
-├── outputs/
-│   ├── reports/
-│   └── driver_instructions/
-│
-├── .env
-├── .gitignore
 ├── requirements.txt
-└── README.md
+├── .gitignore
+├── README.md
+└── .env (not included in Git)
+```
+
+---
+
+# Project Architecture
+
+```text
+                 Healthcare Dataset
+                        │
+                        ▼
+              Data Loading Module
+                        │
+                        ▼
+           Genetic Algorithm Optimizer
+     ┌──────────────┬──────────────┬──────────────┐
+     │              │              │
+     ▼              ▼              ▼
+Tournament     Order Crossover   Mutation
+ Selection
+     │
+     ▼
+ Best Optimized Route
+     │
+     ▼
+Vehicle Route Splitter (VRP)
+     │
+     ▼
+ Vehicle Statistics
+     │
+     ▼
+ Google Gemini API
+ ├── Driver Instructions
+ ├── Daily Reports
+ ├── Route Summaries
+ └── Question Answering
 ```
 
 ---
 
 # How the System Works
 
-```
+```text
 Healthcare Dataset
         │
         ▼
@@ -89,9 +126,9 @@ Generate Initial Population
         ▼
 Genetic Algorithm
         │
-        ├── Selection
-        ├── Crossover
-        ├── Mutation
+        ├── Tournament Selection
+        ├── Order Crossover
+        ├── Swap Mutation
         ├── Fitness Evaluation
         └── Elitism
         │
@@ -105,10 +142,11 @@ Split Route Among Vehicles
 Vehicle Analysis
         │
         ▼
-Gemini AI
+Google Gemini
         ├── Driver Instructions
-        ├── Daily Report
-        └── Question Answering
+        ├── Daily Logistics Report
+        ├── Route Summaries
+        └── Natural Language Question Answering
 ```
 
 ---
@@ -117,26 +155,30 @@ Gemini AI
 
 Each chromosome represents an ordered sequence of healthcare locations.
 
-The Genetic Algorithm follows the classical evolutionary cycle:
+The optimization process follows the classical Genetic Algorithm cycle:
 
-1. Generate initial population
-2. Evaluate fitness
-3. Tournament selection
-4. Order crossover
-5. Mutation
-6. Elitism
-7. Repeat until maximum generations
+1. Generate an initial random population
+2. Evaluate the fitness of every route
+3. Select parents using Tournament Selection
+4. Generate offspring using Order Crossover
+5. Apply Swap Mutation
+6. Preserve the best solution using Elitism
+7. Repeat for the specified number of generations
 
 ---
 
 # Fitness Function
 
-The fitness function minimizes the following objectives simultaneously:
+The objective is to minimize the following fitness function:
+
+**Fitness = Distance + Priority Penalty + Capacity Penalty + Distance Penalty**
+
+The algorithm simultaneously minimizes:
 
 - Total travel distance
-- Priority delivery penalties
-- Vehicle capacity penalties
-- Maximum route distance penalties
+- Delivery priority penalties
+- Vehicle capacity violations
+- Maximum route distance violations
 
 Lower fitness values indicate better delivery routes.
 
@@ -144,43 +186,43 @@ Lower fitness values indicate better delivery routes.
 
 # Healthcare Constraints
 
-The original TSP implementation was extended with realistic logistics constraints:
+The original TSP implementation was extended with realistic healthcare logistics constraints.
 
-### Priority Deliveries
+## Priority Deliveries
 
-Critical medications should be delivered earlier than regular supplies.
+Critical deliveries should be completed before regular deliveries.
 
 Priority levels:
 
-- Priority 3 – Critical
-- Priority 2 – Important
-- Priority 1 – Regular
+- **Priority 3** – Critical
+- **Priority 2** – Important
+- **Priority 1** – Regular
 
 Late visits receive increasing penalties.
 
 ---
 
-### Vehicle Capacity
+## Vehicle Capacity
 
 Each vehicle has a maximum carrying capacity.
 
-Routes exceeding the capacity receive a fitness penalty.
+Routes exceeding the allowed weight receive an additional fitness penalty.
 
 ---
 
-### Vehicle Autonomy
+## Vehicle Autonomy
 
 Vehicles have a maximum travel distance.
 
-Long routes receive additional penalties to simulate fuel or battery limitations.
+Routes exceeding this distance receive an additional penalty, simulating fuel or battery limitations.
 
 ---
 
-### Multiple Vehicles
+## Multiple Vehicles
 
-Instead of implementing a complete Vehicle Routing Problem (VRP), the optimized route is divided among multiple vehicles.
+Instead of implementing a complete Vehicle Routing Problem (VRP), the optimized route is divided among multiple delivery vehicles.
 
-This approach satisfies the project requirements while preserving the original Genetic Algorithm structure.
+This extension satisfies the project requirements while preserving the original Genetic Algorithm structure.
 
 ---
 
@@ -188,7 +230,7 @@ This approach satisfies the project requirements while preserving the original G
 
 Google Gemini was integrated as a logistics assistant.
 
-The LLM generates:
+The Large Language Model automatically generates:
 
 - Driver Instructions
 - Daily Logistics Reports
@@ -197,10 +239,10 @@ The LLM generates:
 
 Example:
 
-```
+```text
 Question:
 
-Which vehicle has the largest number of high-priority deliveries?
+Which vehicle has the highest number of high-priority deliveries?
 
 Answer:
 
@@ -209,16 +251,89 @@ Vehicle 2 has the highest number of high-priority deliveries.
 
 ---
 
+# API Documentation
+
+The project integrates the **Google Gemini API** to provide intelligent logistics assistance.
+
+## Implemented Functions
+
+| Function | Description |
+|----------|-------------|
+| `generate_driver_instructions()` | Generates detailed delivery instructions for each vehicle. |
+| `explain_vehicle_route()` | Summarizes the optimized route of each vehicle. |
+| `generate_daily_report()` | Generates a professional logistics report from the optimization results. |
+| `ask_question()` | Answers logistics-related questions using the optimized routes. |
+
+## Authentication
+
+The API key is stored securely using environment variables.
+
+Create a `.env` file:
+
+```env
+GEMINI_API_KEY=YOUR_API_KEY
+```
+
+The `.env` file should never be committed to Git.
+
+---
+
+# Demonstration Scripts
+
+The repository includes demonstration scripts for testing the project.
+
+## tsp.py
+
+Main application.
+
+It performs:
+
+- Healthcare dataset loading
+- Genetic Algorithm optimization
+- Route visualization
+- Vehicle route splitting
+- Driver instruction generation
+- Daily report generation
+- Natural language question answering
+
+Run:
+
+```bash
+python src/tsp.py
+```
+
+---
+
+## test_llm.py
+
+Demonstrates the Google Gemini integration independently of the optimization algorithm.
+
+Functions demonstrated:
+
+- Driver instruction generation
+- Logistics report generation
+- Natural language interaction
+
+Run:
+
+```bash
+python src/test_llm.py
+```
+
+---
+
 # Route Visualization
 
-The application displays:
+The application provides a real-time visualization of the optimization process.
+
+The interface displays:
 
 - Healthcare locations
 - Current best route
-- Second-best route
+- Secondary candidate route
 - Fitness evolution graph
 
-This allows visual monitoring of the optimization process.
+This visualization allows users to observe how the Genetic Algorithm improves delivery routes over successive generations.
 
 ---
 
@@ -236,15 +351,15 @@ Create a virtual environment:
 python -m venv .venv
 ```
 
-Activate the environment:
+Activate the environment.
 
-Windows
+Windows:
 
 ```bash
 .venv\Scripts\activate
 ```
 
-Linux/macOS
+Linux/macOS:
 
 ```bash
 source .venv/bin/activate
@@ -262,7 +377,7 @@ pip install -r requirements.txt
 
 Create a `.env` file:
 
-```text
+```env
 GEMINI_API_KEY=YOUR_API_KEY
 ```
 
@@ -272,6 +387,8 @@ Do **not** commit this file to Git.
 
 # Running the Project
 
+Execute:
+
 ```bash
 python src/tsp.py
 ```
@@ -279,8 +396,9 @@ python src/tsp.py
 The application will:
 
 - Load the healthcare dataset
-- Optimize delivery routes
-- Display the visualization
+- Execute the Genetic Algorithm
+- Visualize the optimization process
+- Split routes among vehicles
 - Generate vehicle summaries
 - Generate AI driver instructions
 - Generate the daily logistics report
@@ -288,13 +406,11 @@ The application will:
 
 ---
 
-# Results
-
-Example configuration:
+# Example Results
 
 | Parameter | Value |
 |-----------|------:|
-| Locations | 90 |
+| Healthcare Locations | 90 |
 | Vehicles | 3 |
 | Population Size | 100 |
 | Generations | 500 |
@@ -305,13 +421,14 @@ Example configuration:
 # Future Improvements
 
 - Google Maps integration
-- OpenStreetMap routing
-- Real road distances
-- Traffic-aware optimization
-- Time-window constraints
+- OpenStreetMap road routing
+- Real road-distance calculations
+- Traffic-aware route optimization
+- Delivery time windows
 - Dynamic routing
-- Full Vehicle Routing Problem (VRP)
+- Complete Vehicle Routing Problem (VRP)
 - Multiple depots
+- Cloud deployment
 
 ---
 
@@ -327,4 +444,4 @@ Medical Route Optimization using Genetic Algorithms and Large Language Models
 
 # License
 
-This project was developed for educational purposes as part of the FIAP Tech Challenge.
+This project was developed exclusively for educational purposes as part of the FIAP Tech Challenge.
